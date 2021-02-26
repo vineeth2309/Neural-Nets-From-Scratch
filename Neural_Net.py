@@ -9,6 +9,7 @@ class tensor:
 		self.data = x
 		self.requires_grad = requires_grad
 		self.shape = x.shape
+		self.grad = None
 		
 class Linear:
 	def __init__(self, input_shape, output_shape, activation="sigmoid", leaky_slope=0.01):
@@ -23,13 +24,11 @@ class Linear:
 	
 	def __call__(self, x):
 		self.backward(x)
-		return self.activation(np.matmul(x, self.weights) + self.bias.T)
+		return tensor(self.activation(np.matmul(x.data, self.weights) + self.bias.T))
 
 	def backward(self, x):
-		print(type(x))
-		if type(x) == np.array:
+		if x.grad == None:
 			print("HERE")
-		# self.dlw, self.dlb
 
 class Activation:
 	def __init__(self, name='sigmoid', leaky_slope=0.01):
@@ -71,9 +70,9 @@ class Neural_Network:
 
 class Main:
 	def __init__(self):
-		self.X = np.ones((10, 2))
+		self.X = tensor(np.ones((10, 2)), requires_grad=True)
 		self.net = Neural_Network()
-		print(self.net.forward(self.X))
+		print(self.net.forward(self.X).data)
 		
 
 if __name__ == "__main__":
