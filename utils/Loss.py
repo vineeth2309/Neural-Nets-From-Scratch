@@ -8,7 +8,7 @@ class loss:
 	def __call__(self, yhat , y):
 		""" yhat-> model prediction, y -> label"""
 		loss = tensor(np.zeros_like(yhat.data))
-		assert yhat.shape == y.shape
+		assert yhat.data.shape == y.data.shape
 		if self.name == "cross_entropy":
 			loss.data = np.mean(np.nan_to_num(np.sum(-((y.data * np.log(yhat.data)) + ((1-y.data) * np.log(1 - yhat.data))), axis=1)))
 			if yhat.requires_grad:
