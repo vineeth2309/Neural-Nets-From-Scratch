@@ -13,33 +13,40 @@ from utils.tensor import tensor
 class Neural_Network:
 	def __init__(self, learning_rate = 1e-4):
 		self.layer1 = Linear_Layer(2, 16, activation="leaky_relu", learning_rate = learning_rate)
-		self.layer2 = Linear_Layer(16, 2, activation="softmax", learning_rate = learning_rate)
+		self.layer2 = Linear_Layer(16, 32, activation="leaky_relu", learning_rate = learning_rate)
+		self.layer3 = Linear_Layer(32, 4, activation="softmax", learning_rate = learning_rate)
 
 	def forward(self, x):
 		x = self.layer1(x)
 		x = self.layer2(x)
+		x = self.layer3(x)
 		return x
 	
 	def backward(self, yhat):
-		x = self.layer2.backward(yhat)
+		x = self.layer3.backward(yhat)
+		x = self.layer2.backward(x)
 		x = self.layer1.backward(x)
 	
 	def update(self):
+		self.layer3.update()
 		self.layer2.update()
 		self.layer1.update()
 	
 	def clear(self):
+		self.layer3.clear()
 		self.layer2.clear()
 		self.layer1.clear()
 
 class Main:
 	def __init__(self):
-		self.X1, self.Y1 = datasets.make_blobs(n_samples=1000, centers=2, n_features=2, random_state=0)
+		self.no_classes = 4
+		self.X1, self.Y1 = datasets.make_blobs(n_samples=1000, centers=self.no_classes, n_features=2, random_state=0)
 		self.plot_data(self.X1,self.Y1)
 		self.Y1 = self.one_hot(self.Y1)
 		self.X_tensor = tensor(self.X1, requires_grad=True)
 		self.Y_tensor = tensor(self.Y1, requires_grad=False)	
-		self.net = Neural_Network()
+		self.num_epochs, self.lr = 1000, 1e-4
+		self.net = Neural_Network(self.lr)
 		self.loss = loss("cross_entropy")
 		self.forward()
 	
@@ -63,7 +70,7 @@ class Main:
 		plt.show()
 
 	def forward(self):
-		for i in range(1000):
+		for i in range(self.num_epochs):
 			out = self.net.forward(self.X_tensor)
 			loss, out = self.loss(out, self.Y_tensor)
 			print("EPOCH {}: {}".format(str(i), str(loss.data)))
